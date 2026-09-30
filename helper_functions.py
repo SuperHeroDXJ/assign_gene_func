@@ -120,7 +120,71 @@ def local_alignment(seq1, seq2, scoring_function):
     Other alignments are not possible.
 
     """
-    raise NotImplementedError()
+    n = len(seq1)
+    m = len(seq2)
+    gap_penalty = -1  # Gap penalty inferred from the doctest example
+
+    # Initialize score matrix and traceback matrix with zeros
+    score_matrix = [[0] * (m + 1) for _ in range(n + 1)]
+    traceback = [[''] * (m + 1) for _ in range(n + 1)]
+
+    max_score = 0
+    max_i, max_j = 0, 0
+
+    # Fill the score matrix
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            # Calculate scores for three operations
+            match = score_matrix[i-1][j-1] + scoring_function(seq1[i-1], seq2[j-1])
+            delete = score_matrix[i-1][j] + gap_penalty
+            insert = score_matrix[i][j-1] + gap_penalty
+
+            # Local alignment resets to 0 if the score is negative
+            score = max(0, match, delete, insert)
+            score_matrix[i][j] = score
+
+            # Record traceback direction
+            if score == 0:
+                traceback[i][j] = '0'
+            elif score == match:
+                traceback[i][j] = 'D'  # Diagonal
+            elif score == delete:
+                traceback[i][j] = 'U'  # Up
+            else:
+                traceback[i][j] = 'L'  # Left
+
+            # Keep track of the maximum score and its position
+            if score > max_score:
+                max_score = score
+                max_i, max_j = i, j
+
+    # Traceback from the highest score until we hit a zero score
+    aligned_seq1 = []
+    aligned_seq2 = []
+    i, j = max_i, max_j
+
+    while i > 0 and j > 0 and score_matrix[i][j] > 0:
+        if traceback[i][j] == 'D':
+            aligned_seq1.append(seq1[i-1])
+            aligned_seq2.append(seq2[j-1])
+            i -= 1
+            j -= 1
+        elif traceback[i][j] == 'U':
+            aligned_seq1.append(seq1[i-1])
+            aligned_seq2.append('-')
+            i -= 1
+        elif traceback[i][j] == 'L':
+            aligned_seq1.append('-')
+            aligned_seq2.append(seq2[j-1])
+            j -= 1
+        else:
+            break
+
+    # Reverse the strings
+    aligned_seq1 = ''.join(reversed(aligned_seq1))
+    aligned_seq2 = ''.join(reversed(aligned_seq2))
+
+    return aligned_seq1, aligned_seq2, float(max_score)
 
 
 ## This is an example scoring function, you should implement a version which uses a scoring matrix 
