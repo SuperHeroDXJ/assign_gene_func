@@ -90,7 +90,7 @@ def global_alignment(seq1, seq2, scoring_function):
     return aligned_seq1, aligned_seq2, float(score_matrix[n][m])
 
 
-def local_alignment(seq1, seq2, scoring_function):
+def local_alignment(seq1, seq2, scoring_function, gap_penalty=-1):
     """Local sequence alignment using the Smith-Waterman algorithm.
 
     Indels should be denoted with the "-" character.
@@ -122,7 +122,6 @@ def local_alignment(seq1, seq2, scoring_function):
     """
     n = len(seq1)
     m = len(seq2)
-    gap_penalty = -1  # Gap penalty inferred from the doctest example
 
     # Initialize score matrix and traceback matrix with zeros
     score_matrix = [[0] * (m + 1) for _ in range(n + 1)]
